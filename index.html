@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		
+		<script src="three.js"></script>
+		<script>
+
+
+/*
+
+How to Play:
+	
+	The use Clicks where  they  want the ball  travel  to, then they use the arrow pads up and down  to determine how hard they want to 
+	hit the ball, once they determine  the level of acceleration, scene by the colored cube that shows on the  screen they must then hit the
+	enter button to actually put  their ball. the  goal is to  hit the ball in the hole as in any other putt putt game. it is a par 3 hole
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*initialization of the scene along with getting the camera in the right position and the  light in order as well */
+
+
+
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			scene.background = new THREE.Color(0x000000);		
+			var light = new THREE.DirectionalLight( 0xffffff );
+			light.position.set( 1, -2, 5).normalize();
+			var directionalLight = new THREE.DirectionalLight( 0xffffff, 5 );
+			//scene.add( directionalLight );
+			scene.add(light);
+			console.log(camera.position);
+			camera.position.z = 10;
+			camera.position.y = -20;
+			
+			camera.lookAt(0,0,0);
+
+/*
+this upcoming function is for the  words at the end of  the  screen, this was difficult do  to  the  fact that  i had  to make my own 
+typeface json file since i wanted to  make the words three D, also since i use it in a function the word objct  is not  global so i must use var characters
+to initialize it in  the scene which i then can call later causing the words to spin
+*/
+
+
+	let word;
+	
+function winnerScore(x){
+		let scores = ['Hole in One','Birdie','Par','Bogey',
+			'Double Bogey', 'Triple Bogey','Snowman','oof try again'];
+		let loader = new THREE.FontLoader();
+
+		loader.load( 'helvetiker_bold.typeface.json',
+ function ( font ) {
+	if(ping.strokes < 9){
+		var geo = new THREE.TextGeometry( "Thank you for playing \n Nik's 3-D putt-putt\n Your score is:\n"+
+							scores[ping.strokes - 1] + ', Congratulations!',
+	 {
+		font: font,
+		size: 15,
+		height: 2,
+
+	});
+		}
+	else{
+		var geo = new THREE.TextGeometry( scores[7] +',\n you can do better\n that that!',{
+		font: font,
+                  size: 15,
+                  height: 2,
+
+         });
+}
+	var mat = new THREE.MeshBasicMaterial({color: 0xFFFF00 });
+
+
+	word = new THREE.Mesh(geo,mat);
+
+	word.position.z = 30;;
+	word.position.y = -10;
+	word.name = 'word';	
+	word.position.x= -45;
+	word.rotateX(-(Math.PI / 6));
+	scene.add(word);	
+
+});
+
+	
+}
+
+
+		
+//create the stars at  the beginning of the scene  that surroun  the arena	
+			let stars = [];
+                          
+                          
+                          function getRandom() {
+                                  let num = Math.floor(Math.random()*15) + 1;
+                                  num *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+                                  return num;
+                         }
+                          
+                         for (let i = 0; i < 400; i++){
+                          let geometry = new THREE.CubeGeometry(.02,.02,.02);
+                          let material = new THREE.MeshBasicMaterial( { color: 0xFFFF00}) ;
+                          
+                          let star = new THREE.Mesh(geometry, material);
+                          star.position.set( getRandom(), getRandom(), getRandom());;
+                          stars.push(star);
+                          
+                          }
+                          for (let j = 0; j < stars.length; j++){
+                                  scene.add(stars[j]);
+                          }
+	
+
+//creates the walls of the course
+			let  geometry = new THREE.BoxGeometry(1,100,2);
+			let  material = new THREE.MeshPhongMaterial();
+			material.map = THREE.ImageUtils.loadTexture('brick.jpg'); 
+			let wall = new THREE.Mesh(geometry, material);
+			wall.position.x = 5.5;
+			scene.add(wall);
+
+			geometry = new THREE.BoxGeometry(1,100,2);
+			material = new THREE.MeshPhongMaterial();
+			material.map = THREE.ImageUtils.loadTexture('brick.jpg'); 
+			let wall2 = new THREE.Mesh(geometry, material);
+			wall2.position.x = -5.5;
+			scene.add(wall2);
+		
+			geometry = new THREE.BoxGeometry(12, 10,2);
+			material = new THREE.MeshPhongMaterial();
+			material.map = THREE.ImageUtils.loadTexture('brick.jpg'); 
+			let wall3 = new THREE.Mesh(geometry, material);
+			
+			wall3.position.y = 45;
+			
+			scene.add(wall3);
+	
+
+
+//creates the obstacles
+			geometry = new THREE.BoxGeometry(6, 1,1);
+			material = new THREE.MeshPhongMaterial();
+			material.map = THREE.ImageUtils.loadTexture('brick.jpg'); 
+			let wall4 = new THREE.Mesh(geometry, material);		
+			
+			wall4.position.y = 1;
+			wall4.position.x = 2;
+			scene.add(wall4);
+
+
+
+			geometry = new THREE.BoxGeometry(2,1,2);
+			material = new THREE.MeshPhongMaterial();
+			material.map = THREE.ImageUtils.loadTexture('brick.jpg'); 
+			let obstacle1 = new THREE.Mesh(geometry, material);
+			obstacle1.position.y = 12;
+			scene.add(obstacle1);
+
+						
+
+		
+		
+
+			//make ball
+			
+
+
+			 geometry  = new THREE.SphereGeometry(.5,32,32);
+			 material = new THREE.MeshPhongMaterial({color: 0x676767});
+			material.map = THREE.ImageUtils.loadTexture('golfBall.jpg'); 
+			let ping = new THREE.Mesh(geometry, material);
+			ping.position.z = 0.3;
+			ping.position.y = -12;
+			ping.dirX = 0;
+			ping.dirY = 0;
+			ping.acc = 0;
+			ping.count = 0;
+			ping.strokes = 0;
+			ping.sceneEnd = 0;
+			
+			scene.add(ping);
+		
+			//create board for game to be  played	
+
+			geometry = new THREE.PlaneGeometry(10,90);
+			material = new THREE.MeshPhongMaterial({color: 0x4BD121});
+			material.map = THREE.ImageUtils.loadTexture('turf.jpeg');
+			let table = new THREE.Mesh(geometry, material);
+			table.position.y = -5;;
+			scene.add(table);
+		
+		//used for showing where people  click 
+			geometry = new THREE.CircleGeometry(.5,32);
+			material = new THREE.MeshNormalMaterial();
+			let clickPlace = new THREE.Mesh(geometry, material);
+			
+		//creates the holes
+			geometry = new THREE.CircleGeometry(1,32);
+			material = new THREE.MeshNormalMaterial();
+			let hole = new THREE.Mesh(geometry, material);
+			hole.position.y = 25;
+			scene.add( hole );
+		
+			geometry = new THREE.CircleGeometry(1,32); 
+			material = new THREE.MeshNormalMaterial();		
+			let hole2 = new THREE.Mesh(geometry, material);
+			hole2.position.y = 25;
+			hole2.position.z = .1;			
+			scene.add( hole2 );
+
+
+		//creates a mouseDown Window Listener
+
+			function addMouseListener(){
+					window.addEventListener("mousedown", mouseDownHandler);
+				}
+			addMouseListener();
+
+
+			
+			//creates a circle where user  clicks
+		
+			geometry = new THREE.CircleGeometry(.25,32);
+			material = new THREE.MeshNormalMaterial();
+			let clickPoint = new THREE.Mesh(geometry,material);
+
+
+
+
+
+	function mouseDownHandler(event){
+		event.preventDefault();
+
+/*
+on mouse down event  we get the coordinates of that point  in  the three js coordinate system
+*/
+
+	if(ping.acc === 0){
+		ping.dirX = 0;
+		ping.dirY = 0;
+		var vec = new THREE.Vector3(); 
+		var pos = new THREE.Vector3(); 
+
+		vec.set(
+   			 ( event.clientX / window.innerWidth ) * 2 - 1,
+	   		 - ( event.clientY / window.innerHeight ) * 2 + 1,
+  			  0.5 );
+
+		vec.unproject( camera );
+
+		vec.sub( camera.position ).normalize();
+
+		var distance = - camera.position.z / vec.z;
+
+		pos.copy( camera.position ).add( vec.multiplyScalar( distance ) );
+
+		console.log(pos);
+
+
+/*
+	when we have that  three js coordinate system  
+point we then need  to get  the slop the ball will travel at,
+ we use the simple  slope  of rise over run to find the direction y and x the ball
+will be traveling which we store in  their local  vairables.
+*/
+
+	if(pos.y < 47){	
+		clickPlace.position.x = pos.x;
+		clickPlace.position.y = pos.y;
+		scene.add(clickPlace);
+		
+		ping.dirX = pos.x - ping.position.x ;
+		ping.dirY = pos.y  - ping.position.y ;
+
+		}
+			
+		}
+		
+}
+
+//colors for acceleration block
+
+		let colors = [0x00ff00, 0x00ff00,
+			    0xffff00,0xffff00,
+				0xffff00, 0xff0000,
+				0x8b0000];
+		
+		//adds a button listener event
+
+			function addButtonListener(){
+				 window.addEventListener("keydown", buttonHandler);
+				}
+			addButtonListener();
+			
+	
+
+
+
+
+
+
+		function buttonHandler(event){
+
+		//allows the user to  use the arrow keys
+
+			while(ping.count < 7){
+				
+				if (event.keyCode == 38){
+					ping.acc += 0.005;
+											
+					ping.count++;
+				
+	}
+
+				else if (event.keyCode == 40 && ping.count != 0 && ping.acc > 0){
+                                         ping.acc -= 0.0035;
+                                         ping.count --;
+                                 }
+
+
+
+				//color representation of  how much acceleration the putt will  have 
+ 
+ 
+                                         geometry = new THREE.BoxGeometry(1,1,1);
+                                         material = new THREE.MeshPhongMaterial({color: colors[ping.count - 1]});
+                                         let accBox = new THREE.Mesh(geometry, material);
+                                                  accBox.position.x  =  -10;
+                                         accBox.position.z = 10;
+                                         scene.add(accBox);
+			break;
+
+}
+				//user presses enter when they  want  to  putt
+                
+                if (event.keyCode == 13){
+		
+                                 if (ping.dirX != 0 && ping.dirY != 0 &&  ping.acc != 0 && ping.count > 0){
+                                          ping.count = 8;
+                                 
+                                          ping.strokes++;
+                                         }
+                                                
+                                  }
+				
+                        
+
+			//color representation of  how much acceleration the putt will  have 
+
+
+/*
+					geometry = new THREE.BoxGeometry(1,1,1);
+					material = new THREE.MeshPhongMaterial({color: colors[ping.count - 1]});
+					let accBox = new THREE.Mesh(geometry, material);
+	
+					accBox.position.x  =  -10;
+					accBox.position.z = 10;
+					scene.add(accBox);
+*/
+}		
+			
+
+
+
+
+			
+			
+
+		function animate() {
+			requestAnimationFrame( animate );
+		
+
+		//gets a new clickpoint with each click
+			if (ping.dirX != null && ping.dirX != null && ping.acc != null && ping.count > 7){
+					scene.remove(clickPlace)
+			
+
+			//if the ball is in the same place as the hole then it  goes in	
+
+			if(Math.round(ping.position.x) == hole.position.x && Math.round(ping.position.y) == hole.position.y){
+			camera.position.z = -5;			
+			scene.remove(ping);
+			console.log(ping.strokes);	
+			ping.sceneEnd++;
+			
+			endScene(ping.strokes);
+			}
+			
+			//ball slows down with each animation
+			else{
+				ping.acc -= 0.0005;
+				puttMotion();	
+				}
+		}
+			
+			renderer.render( scene, camera );
+			
+}
+			
+			
+			animate();
+			
+			function puttMotion(){
+
+
+		// if statements to determine  if  the  ball is hitting any wall
+				
+				if (ping.position.x <= -4.5 || ping.position.x >= 4.7){
+					ping.dirX = -ping.dirX;
+				}
+				if (ping.position.y >= 40 || ping.position.y <= -15){
+					ping.dirY = -ping.dirY;					
+				}
+
+			if(ping.position.x > - 1.0 && ping.position.x  < 1.2 && ping.position.y > 11 && ping.position.y < 13){
+				ping.dirY = -ping.dirY;
+			}
+			if ( ping.position.y > 11 && ping.position.y < 13.5 &&( ping.position.x  > 1.00 && ping.position.x < 1.22)){
+				ping.dirX = -ping.dirX;
+			}
+			 if ( ping.position.y > 11 && ping.position.y < 13.5 &&( ping.position.x  > 1.00 && ping.position.x < 1.22)){
+				ping.dirX = -ping.dirX;
+			}
+			if(ping.position.x >  - 1 && ping.position.x < 5 && ping.position.y  > 0 && ping.position.y < 2.5){
+				ping.dirY = -ping.dirY;
+			}
+			else if ( ping.position.x >  -1.08  && ping.position.y  > 0.3 && ping.position.y  <  2.5){
+				ping.dirX = -ping.dirX;
+			}
+
+				
+			if (ping.acc > 0){				
+			//keeps the  ball moving
+					ping.position.y += ping.dirY * ping.acc;	
+					ping.position.x += ping.dirX * ping.acc;
+		}
+			else{
+			//sets ball back ready for another hit
+				ping.acc = 0;
+				ping.dirY = 0;
+				ping.dirX = 0;
+				ping.count = 0;
+
+			}
+		}
+	function newBackground(){
+
+	//gets back ground in place for final scene
+
+		let stars = [];
+                            
+                            
+                            function getRandom() {
+                                    let num = Math.floor(Math.random()*20) + 1;
+                                    num *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+                                    return num;
+                           }
+                            
+                            for (let i = 0; i < 1000; i++){
+                           let geometry = new THREE.CubeGeometry(.02,.02,.02);
+                            let material = new THREE.MeshBasicMaterial( { color: 0xFFFFFF}) ;
+                            
+                            let star = new THREE.Mesh(geometry, material);
+                            star.position.set( getRandom() + 35, getRandom(), 90 + getRandom());;
+                            stars.push(star);
+                           
+                            }
+                            for (let j = 0; j < stars.length; j++){
+                                    scene.add(stars[j]);
+                            }
+}
+	function endScene(strokes){
+//removes everything removable from the  scene and adds the spining text
+
+	scene.remove(wall4);
+	scene.remove(wall);
+	scene.remove(wall2);
+	scene.remove(table);
+	scene.remove(obstacle1);
+	scene.remove(wall3);
+	scene.remove(hole);
+	scene.remove(hole2);
+	camera.position.x = 40;
+	camera.position.y = 0 ;
+	camera.position.z = 90;
+	camera.lookAt(45,40, 15);
+	scene.remove(clickPoint);
+	if(ping.sceneEnd === 1){
+	winnerScore();
+	newBackground();
+}
+	
+	word.position.y += 0.1;
+	word.position.z -=0.1;
+
+
+	
+
+
+
+}	
+
+	</script>
+	</body>
+</html>
